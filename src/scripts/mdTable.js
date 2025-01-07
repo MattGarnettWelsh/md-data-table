@@ -132,6 +132,10 @@ function mdTable() {
             return $attrs.multiple === "" || $scope.$eval($attrs.multiple);
         };
 
+        self.enableSimpleCompareMode = function () {
+            return $attrs.simpleCompare === "" || $scope.$eval($attrs.simpleCompare);
+        };
+
         self.waitingOnPromise = function () {
             return !!queue.length;
         };
