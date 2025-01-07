@@ -896,72 +896,111 @@ function mdSelect($compile, $parse) {
 
         self.id = getId(self.model);
 
-        if (tableCtrl.$$rowSelect && self.id) {
-            if (tableCtrl.$$hash.has(self.id)) {
-                var index = tableCtrl.selected.indexOf(tableCtrl.$$hash.get(self.id));
+        // Original library logic remains if !simpleCompareMode
+        if (!tableCtrl.enableSimpleCompareMode()) {
+            if (tableCtrl.$$rowSelect && self.id) {
+                if (tableCtrl.$$hash.has(self.id)) {
+                    var index = tableCtrl.selected.indexOf(tableCtrl.$$hash.get(self.id));
 
-                // if the item is no longer selected remove it
-                if (index === -1) {
-                    tableCtrl.$$hash.purge(self.id);
-                }
+                    // if the item is no longer selected remove it
+                    if (index === -1) {
+                        tableCtrl.$$hash.purge(self.id);
+                    }
 
-                // if the item is not a reference to the current model update the reference
-                else if (!tableCtrl.$$hash.equals(self.id, self.model)) {
-                    tableCtrl.$$hash.update(self.id, self.model);
-                    tableCtrl.selected.splice(index, 1, self.model);
-                }
-            } else {
-                // check if the item has been selected
-                tableCtrl.selected.some(function (item, index) {
-                    if (getId(item) === self.id) {
+                    // if the item is not a reference to the current model update the reference
+                    else if (!tableCtrl.$$hash.equals(self.id, self.model)) {
                         tableCtrl.$$hash.update(self.id, self.model);
                         tableCtrl.selected.splice(index, 1, self.model);
-
-                        return true;
                     }
-                });
+                } else {
+                    // check if the item has been selected
+                    tableCtrl.selected.some(function (item, index) {
+                        if (getId(item) === self.id) {
+                            tableCtrl.$$hash.update(self.id, self.model);
+                            tableCtrl.selected.splice(index, 1, self.model);
+
+                            return true;
+                        }
+                    });
+                }
             }
+
+            self.isSelected = function () {
+                if (!tableCtrl.$$rowSelect) {
+                    return false;
+                }
+
+                if (self.id) {
+                    return tableCtrl.$$hash.has(self.id);
+                }
+
+                return tableCtrl.selected.indexOf(self.model) !== -1;
+            };
+
+            self.select = function () {
+                if (self.disabled) {
+                    return;
+                }
+
+                if (tableCtrl.enableMultiSelect()) {
+                    tableCtrl.selected.push(self.model);
+                } else {
+                    tableCtrl.selected.splice(0, tableCtrl.selected.length, self.model);
+                }
+
+                if (angular.isFunction(self.onSelect)) {
+                    self.onSelect(self.model);
+                }
+            };
+
+            self.deselect = function () {
+                if (self.disabled) {
+                    return;
+                }
+
+                tableCtrl.selected.splice(tableCtrl.selected.indexOf(self.model), 1);
+
+                if (angular.isFunction(self.onDeselect)) {
+                    self.onDeselect(self.model);
+                }
+            };
+        } else {
+            // SIMPLE COMPARE MODE
+            self.isSelected = function () {
+                if (!tableCtrl.$$rowSelect) return false;
+                if (!self.id) return false;
+                return tableCtrl.selected.indexOf(self.id) !== -1;
+            };
+
+            self.select = function () {
+                if (self.disabled) return;
+                if (tableCtrl.enableMultiSelect()) {
+                    tableCtrl.selected.push(self.id);
+
+                    console.log(`[simple-compare-mode] Added an id "${self.id}" to the selected array`);
+                } else {
+                    console.log(`[simple-compare-mode] Cleared the selected array and added an id "${self.id}" to it`);
+
+                    tableCtrl.selected.splice(0, tableCtrl.selected.length, self.id);
+                }
+                if (angular.isFunction(self.onSelect)) {
+                    self.onSelect(self.model);
+                }
+            };
+
+            self.deselect = function () {
+                if (self.disabled) return;
+                var idx = tableCtrl.selected.indexOf(self.id);
+                if (idx !== -1) {
+                    tableCtrl.selected.splice(idx, 1);
+
+                    console.log(`[simple-compare-mode] Removed an id "${self.id}" from the selected array`);
+                }
+                if (angular.isFunction(self.onDeselect)) {
+                    self.onDeselect(self.model);
+                }
+            };
         }
-
-        self.isSelected = function () {
-            if (!tableCtrl.$$rowSelect) {
-                return false;
-            }
-
-            if (self.id) {
-                return tableCtrl.$$hash.has(self.id);
-            }
-
-            return tableCtrl.selected.indexOf(self.model) !== -1;
-        };
-
-        self.select = function () {
-            if (self.disabled) {
-                return;
-            }
-
-            if (tableCtrl.enableMultiSelect()) {
-                tableCtrl.selected.push(self.model);
-            } else {
-                tableCtrl.selected.splice(0, tableCtrl.selected.length, self.model);
-            }
-
-            if (angular.isFunction(self.onSelect)) {
-                self.onSelect(self.model);
-            }
-        };
-
-        self.deselect = function () {
-            if (self.disabled) {
-                return;
-            }
-
-            tableCtrl.selected.splice(tableCtrl.selected.indexOf(self.model), 1);
-
-            if (angular.isFunction(self.onDeselect)) {
-                self.onDeselect(self.model);
-            }
-        };
 
         self.toggle = function (event) {
             if (event && event.stopPropagation) {
@@ -1224,6 +1263,10 @@ function mdTable() {
 
         self.enableMultiSelect = function () {
             return $attrs.multiple === "" || $scope.$eval($attrs.multiple);
+        };
+
+        self.enableSimpleCompareMode = function () {
+            return $attrs.simpleCompare === "" || $scope.$eval($attrs.simpleCompare);
         };
 
         self.waitingOnPromise = function () {
