@@ -172,18 +172,18 @@ angular.module("nutritionApp").controller("nutritionController", [
         };
 
         $scope.onPaginate = function (page, limit) {
-            console.log("Scope Page: " + $scope.query.page + " Scope Limit: " + $scope.query.limit);
-            console.log("Page: " + page + " Limit: " + limit);
+            console.debug("Scope Page: " + $scope.query.page + " Scope Limit: " + $scope.query.limit);
+            console.debug("Page: " + page + " Limit: " + limit);
 
             $scope.promise = $timeout(function () {}, 2000);
         };
 
         $scope.deselect = function (item) {
-            console.log(item.name, "was deselected");
+            console.debug(item.name, "was deselected");
         };
 
         $scope.log = function (item) {
-            console.log(item.name, "was selected");
+            console.debug(item.name, "was selected");
         };
 
         $scope.loadStuff = function () {
@@ -191,8 +191,8 @@ angular.module("nutritionApp").controller("nutritionController", [
         };
 
         $scope.onReorder = function (order) {
-            console.log("Scope Order: " + $scope.query.order);
-            console.log("Order: " + order);
+            console.debug("Scope Order: " + $scope.query.order);
+            console.debug("Order: " + order);
 
             $scope.promise = $timeout(function () {}, 2000);
         };

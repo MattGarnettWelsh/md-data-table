@@ -93,11 +93,7 @@ function mdSelect($compile, $parse) {
                 if (self.disabled) return;
                 if (tableCtrl.enableMultiSelect()) {
                     tableCtrl.selected.push(self.id);
-
-                    console.log(`[simple-compare-mode] Added an id "${self.id}" to the selected array`);
                 } else {
-                    console.log(`[simple-compare-mode] Cleared the selected array and added an id "${self.id}" to it`);
-
                     tableCtrl.selected.splice(0, tableCtrl.selected.length, self.id);
                 }
                 if (angular.isFunction(self.onSelect)) {
@@ -110,8 +106,6 @@ function mdSelect($compile, $parse) {
                 var idx = tableCtrl.selected.indexOf(self.id);
                 if (idx !== -1) {
                     tableCtrl.selected.splice(idx, 1);
-
-                    console.log(`[simple-compare-mode] Removed an id "${self.id}" from the selected array`);
                 }
                 if (angular.isFunction(self.onDeselect)) {
                     self.onDeselect(self.model);
